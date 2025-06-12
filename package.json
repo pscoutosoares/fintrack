@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": " npm run services:up && npm run services:wait:database && npm run migrations:up && npm run services:wait:dev",
-    "vercel-build": "npx prisma generate && npm run next build",
+    "vercel-build": "dotenv -c development -- npx prisma generate --schema=./infra/schema.prisma && npm run next build",
     "services:up": "docker compose -f infra/compose.yaml up -d",
     "services:stop": "docker compose -f infra/compose.yaml stop",
     "services:down": "docker compose -f infra/compose.yaml down",
