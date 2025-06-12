@@ -1,8 +1,8 @@
-import orchestrator from "tests/orchestrator.js";
+// import orchestrator from "tests/orchestrator.js";
 
-beforeAll(async () => {
-  await orchestrator.waitForAllServices();
-});
+// beforeAll(async () => {
+//   await orchestrator.waitForAllServices();
+// });
 
 describe("GET /api/v1/status", () => {
   describe("Annonymous user", () => {
@@ -11,6 +11,7 @@ describe("GET /api/v1/status", () => {
       expect(response.status).toBe(200);
 
       const responseBody = await response.json();
+
       expect(responseBody.updated_at).toBeDefined();
 
       const updatedAtParsedToIso = new Date(

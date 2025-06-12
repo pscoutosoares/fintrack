@@ -1,49 +1,45 @@
+import { withAccelerate } from "@prisma/extension-accelerate";
 import { ServiceError } from "./errors";
+import { PrismaClient, Prisma } from "@prisma/client";
 
-async function query(queryObject: any) {
+type QueryObject = {
+  text: string;
+  values?: any[];
+};
+type QueryType = QueryObject | string;
+
+async function getNewClient() {
+  return await new PrismaClient().$extends(withAccelerate());
+}
+async function query(queryObject: QueryType) {
   let client;
+  let query: TemplateStringsArray | Prisma.Sql;
   try {
     client = await getNewClient();
-    const result = await client.query(queryObject);
+    if (typeof queryObject === "object") {
+      const result = await client.$queryRawUnsafe(
+        `${queryObject.text}`,
+        ...(queryObject.values ?? []),
+      );
+      return result;
+    }
+    query = Prisma.raw(`${queryObject}`);
+    const result = await client.$queryRaw(query);
     return result;
   } catch (error) {
-    console.error(`DB error: ${error}`);
     const serviceErrorObject = new ServiceError({
       message: "Erro na conexão com o Banco ou na query.",
       cause: error as Error,
     });
     throw serviceErrorObject;
   } finally {
-    await client?.close();
+    await client?.$disconnect();
   }
-}
-
-async function getNewClient() {
-  const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL environment variable is not defined.");
-  }
-  const client = new Sequelize(databaseUrl, {
-    dialectOptions: {
-      ssl: getSSLValues(),
-    },
-  });
-  await client.authenticate();
-  return client;
 }
 
 const database = {
-  query,
   getNewClient,
+  query,
 };
 
 export default database;
-
-function getSSLValues() {
-  if (process.env.POSTGRES_CA) {
-    return {
-      ca: process.env.POSTGRES_CA,
-    };
-  }
-  return process.env.NODE_ENV === "production" ? true : false;
-}
