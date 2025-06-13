@@ -6,6 +6,8 @@ import {
   UnauthorizedError,
 } from "infra/errors";
 
+type Handler = (req: Request, context?: any) => Promise<Response>;
+
 function onNoMatchHandler(request: Request, response: any) {
   const publicErrorObject = new MethodNotAllowedError();
   response.status(publicErrorObject.statusCode).json(publicErrorObject);

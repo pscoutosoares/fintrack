@@ -1,16 +1,18 @@
-import { Prisma } from "@prisma/client";
 import database from "infra/database";
-import { NextRequest, NextResponse } from "next/server";
-
-export async function GET(request: NextRequest) {
+import { NextResponse } from "next/server";
+export async function GET() {
   const updatedAt = new Date().toISOString();
-  const maxConnections = await database.query("SHOW max_connections;");
-  const currentConnections = await database.query({
+  const maxConnections = (await database.query("SHOW max_connections;")) as {
+    max_connections: string;
+  }[];
+  const currentConnections = (await database.query({
     text: `SELECT count(*)::int FROM pg_stat_activity WHERE datname = $1`,
     values: [process.env.POSTGRES_DB],
-  });
-  const pgCurrentVersion = await database.query("SHOW server_version");
-  return Response.json(
+  })) as { count: number }[];
+  const pgCurrentVersion = (await database.query("SHOW server_version")) as {
+    server_version: string;
+  }[];
+  return NextResponse.json(
     {
       updated_at: updatedAt,
       dependencies: {
@@ -23,6 +25,7 @@ export async function GET(request: NextRequest) {
     },
     {
       status: 200,
+      headers: { "Content-Type": "application/json" },
     },
   );
 }
