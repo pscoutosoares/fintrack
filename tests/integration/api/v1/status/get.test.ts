@@ -1,8 +1,8 @@
-// import orchestrator from "tests/orchestrator.js";
+import orchestrator from "tests/orchestrator";
 
-// beforeAll(async () => {
-//   await orchestrator.waitForAllServices();
-// });
+beforeAll(async () => {
+  await orchestrator.waitForAllServices();
+});
 
 describe("GET /api/v1/status", () => {
   describe("Annonymous user", () => {

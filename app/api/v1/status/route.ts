@@ -1,5 +1,5 @@
 import database from "infra/database";
-
+import { NextResponse } from "next/server";
 export async function GET() {
   const updatedAt = new Date().toISOString();
   const maxConnections = (await database.query("SHOW max_connections;")) as {
@@ -12,7 +12,7 @@ export async function GET() {
   const pgCurrentVersion = (await database.query("SHOW server_version")) as {
     server_version: string;
   }[];
-  return Response.json(
+  return NextResponse.json(
     {
       updated_at: updatedAt,
       dependencies: {
@@ -25,6 +25,7 @@ export async function GET() {
     },
     {
       status: 200,
+      headers: { "Content-Type": "application/json" },
     },
   );
 }
